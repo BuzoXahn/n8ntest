@@ -1,0 +1,50 @@
+# render.yaml — n8n en Render con Postgres y disco persistente
+databases:
+  - name: n8n-postgres
+    plan: free
+    databaseName: n8n
+    user: n8n
+
+services:
+  - type: web
+    name: n8n-service
+    plan: free
+    runtime: image
+    image:
+      url: docker.io/n8nio/n8n:latest
+    envVars:
+      - key: N8N_PORT
+        value: "5678"
+      - key: N8N_HOST
+        value: your-n8n.onrender.com   # cámbialo al dominio que usarás
+      - key: WEBHOOK_URL
+        value: https://your-n8n.onrender.com/
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: DB_TYPE
+        value: postgresdb
+      - key: DB_POSTGRESDB_HOST
+        fromDatabase:
+          name: n8n-postgres
+          property: host
+      - key: DB_POSTGRESDB_PORT
+        fromDatabase:
+          name: n8n-postgres
+          property: port
+      - key: DB_POSTGRESDB_DATABASE
+        fromDatabase:
+          name: n8n-postgres
+          property: database
+      - key: DB_POSTGRESDB_USER
+        fromDatabase:
+          name: n8n-postgres
+          property: user
+      - key: DB_POSTGRESDB_PASSWORD
+        fromDatabase:
+          name: n8n-postgres
+          property: password
+    disk:
+      name: n8n-data
+      mountPath: /home/node/.n8n
+      sizeGB: 1
+    healthCheckPath: /healthz
